@@ -32,6 +32,11 @@ private:
     "/help", "/online", "/exit"
   };
 
+  static constexpr int KEEPALIVE_ACTIVE = 1;
+  static constexpr int KEEPALIVE_IDLE = 30;
+  static constexpr int KEEPALIVE_INTERVAL = 5;
+  static constexpr int KEEPALIVE_MAX_PROBES = 5;
+
   void client_loop(Client *current);
   void add_client(Client *client);
   void remove_client(Client *client);
@@ -41,11 +46,5 @@ private:
 
   SocketServer *server = nullptr;
 };
-
-/*
-  static constexpr const char *INVALID_VERSION = "Invalid client version!";
-  static constexpr const char *USERNAME_TOO_LONG = "Username is too long!";
-  static constexpr const char *INVALID_CHARS = "Invalid characters in nickname!";
-*/
 
 #endif

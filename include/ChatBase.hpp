@@ -30,7 +30,7 @@ public:
   static constexpr uint8_t VERSION = 1;
   static constexpr unsigned int MAX_LINE_LENGTH = 1024;
   static constexpr unsigned int MAX_NAME_LENGTH = 16;
-  static constexpr unsigned int TIMEOUT = (30 * 1000); // in miliseconds
+  static constexpr unsigned int TIMEOUT = (40 * 1000); // in miliseconds
 };
 
 

@@ -1,10 +1,9 @@
 #include "ChatServer.hpp"
 
-#include <algorithm>
-#include <csignal>
-#include <fmt/core.h>
-#include <memory>
 #include <spdlog/spdlog.h>
+
+#include <algorithm>
+#include <memory>
 #include <winsock2.h>
 
 ChatServer::ChatServer(const std::string &ip) {
@@ -12,8 +11,6 @@ ChatServer::ChatServer(const std::string &ip) {
   bool reuseaddr = true;
   setsockopt(this->server->get_nodeinfo().fd, SOL_SOCKET, SO_REUSEADDR,
              (char *)&reuseaddr, sizeof(reuseaddr));
-
-  std::signal(SIGINT, ChatServer::ctrl_c_handler);
 }
 
 void ChatServer::run() {
@@ -43,8 +40,14 @@ void ChatServer::remove_client(Client *client) {
 }
 
 void ChatServer::handle_client(NodeInfo info) {
-  setsockopt(info.fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&ChatServer::TIMEOUT,
-             sizeof(ChatServer::TIMEOUT));
+  setsockopt(info.fd, SOL_SOCKET, SO_KEEPALIVE, 
+    (const char*)&ChatServer::KEEPALIVE_ACTIVE, sizeof(int));
+  setsockopt(info.fd, IPPROTO_TCP, TCP_KEEPIDLE, 
+    (const char*)&ChatServer::KEEPALIVE_IDLE, sizeof(int));
+  setsockopt(info.fd, IPPROTO_TCP, TCP_KEEPINTVL, 
+    (const char*)&ChatServer::KEEPALIVE_INTERVAL, sizeof(int));
+  setsockopt(info.fd, IPPROTO_TCP, TCP_KEEPCNT, 
+    (const char*)&ChatServer::KEEPALIVE_MAX_PROBES, sizeof(int));
 
   Client *client = this->handle_handshake(info);
   if (client == nullptr) {
@@ -55,16 +58,15 @@ void ChatServer::handle_client(NodeInfo info) {
       Message::create(fmt::format("{} connected", client->get_username()))
           .get());
   this->add_client(client);
-
+  
   client->send(fmt::format("Welcome {}, there are {} users online!",
                            client->get_username(), this->clients.size()));
-
   try {
     this->client_loop(client);
   } catch (const std::exception &e) {
     spdlog::error("Client error: {}", e.what());
   }
-
+  
   this->remove_client(client);
   this->broadcast_message(
       Message::create(fmt::format("{} disconnected", client->get_username()))
@@ -181,8 +183,4 @@ Client *ChatServer::handle_handshake(NodeInfo ni) {
   }
   send(ni.fd, (char *)&ChatServer::Status::OK, ChatServer::STATUS_SIZE, 0);
   return (new Client(ni, username));
-}
-
-void ChatServer::ctrl_c_handler(int) {
-  spdlog::info("User requested program termination, but doing nothing");
 }
