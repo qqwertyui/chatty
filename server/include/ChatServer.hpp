@@ -3,13 +3,13 @@
 
 #include "ChatBase.hpp"
 #include "Client.hpp"
-#include "SocketServer.hpp"
 #include "Message.hpp"
+#include "TCPSocketServer.hpp"
 
-#include <mutex>
-#include <vector>
 #include <array>
+#include <mutex>
 #include <string_view>
+#include <vector>
 
 class ChatServer : public ChatBase {
 public:
@@ -20,7 +20,7 @@ public:
 
 private:
   void handle_client(NodeInfo info);
-  Client* handle_handshake(NodeInfo info);
+  Client *handle_handshake(NodeInfo info);
 
   void execute_command(Client *client, Message *message);
   void broadcast_message(Message *message);
@@ -29,8 +29,7 @@ private:
 
   static constexpr std::string_view WELCOME = "Connected to test chat!";
   static constexpr std::array<std::string_view, 3> COMMANDS = {
-    "/help", "/online", "/exit"
-  };
+      "/help", "/online", "/exit"};
 
   static constexpr int KEEPALIVE_ACTIVE = 1;
   static constexpr int KEEPALIVE_IDLE = 30;
@@ -40,11 +39,13 @@ private:
   void client_loop(Client *current);
   void add_client(Client *client);
   void remove_client(Client *client);
+  Client *find_client_by_name(const std::string &name);
 
-  std::vector<Client*> clients;
-  std::mutex broadcast_mutex, remove_client_mutex, add_client_mutex, command_mutex;
+  std::vector<Client *> clients;
+  std::mutex broadcast_mutex, remove_client_mutex, add_client_mutex,
+      command_mutex;
 
-  SocketServer *server = nullptr;
+  TCPSocketServer *server = nullptr;
 };
 
 #endif

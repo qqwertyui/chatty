@@ -4,17 +4,17 @@
 #include "Client.hpp"
 
 #include <memory>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 class Message {
 public:
   Message(std::vector<unsigned char> &data, Client *client = nullptr);
   Message(const std::string &message, Client *client = nullptr);
 
-  static std::unique_ptr<Message> create(std::string msg, 
-    Client *client = nullptr);
-  
+  static std::unique_ptr<Message> create(std::string msg,
+                                         Client *client = nullptr);
+
   std::string get_all() const;
   std::string get_content() const;
   bool is_command() const;
@@ -23,9 +23,9 @@ public:
 
   static constexpr std::string_view DEFAULT_FORMAT = "[{} {}] {}";
   static constexpr Client *SYSTEM = nullptr;
+
 private:
-  template <typename T>
-  bool validate_message(const T &container);
+  template <typename T> bool validate_message(const T &container);
   void rstrip_newlines(std::vector<unsigned char> &container);
 
   std::string date;

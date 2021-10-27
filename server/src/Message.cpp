@@ -1,4 +1,6 @@
 #include "Message.hpp"
+#include "Utils.hpp"
+
 #include <algorithm>
 #include <chrono>
 #include <ctime>
@@ -29,14 +31,10 @@ Message::Message(std::vector<unsigned char> &data, Client *client) {
   this->author = (client) ? client->get_username() : "*";
 }
 
-template <class T> T &unmove(T &&t) { return t; }
-
 Message::Message(const std::string &message, Client *client)
-#warning TODO: check this out once more
-    : Message(unmove<std::vector<unsigned char>>(
+    : Message(Utils::unmove<std::vector<unsigned char>>(
                   std::vector<unsigned char>(message.begin(), message.end())),
-              client) {
-}
+              client) {}
 
 std::unique_ptr<Message> Message::create(std::string msg, Client *client) {
   return std::make_unique<Message>(msg, client);
