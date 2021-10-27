@@ -3,22 +3,23 @@
 NodeInfo::NodeInfo(const std::string &ip, unsigned short port, SOCKET fd)
     : ip(ip), port(port), fd(fd) {}
 
+#ifdef _WIN32
+  bool TCPSocketWrapper::initialized = false;
+#elif __linux__ // linux doesn't need explicit initialization
+  bool TCPSocketWrapper::initialized = true;
+#endif
+
 TCPSocketWrapper::TCPSocketWrapper(const std::string &ip, unsigned short port) {
-  #ifdef _WIN32
-    WSADATA wsaData;
-    int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (error != 0) {
-      throw std::runtime_error(TCPSocketWrapper::get_last_error());
-    }
-  #endif
+  TCPSocketWrapper::initialize();
   SOCKET fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (fd == INVALID_SOCKET) {
     throw std::runtime_error(TCPSocketWrapper::get_last_error());
   }
-  this->ni = NodeInfo(ip, port, fd);
+  this->ni = NodeInfo(TCPSocketWrapper::resolve_hostname(ip), port, fd);
 }
 
 TCPSocketWrapper::TCPSocketWrapper(const NodeInfo &ni) {
+  TCPSocketWrapper::initialize();
   this->ni = ni;
   this->connected = true;
 }
@@ -106,6 +107,29 @@ std::string TCPSocketWrapper::get_last_error() {
     result = strerror(errno);
   #endif
   return result;
+}
+
+std::string TCPSocketWrapper::resolve_hostname(const std::string &hostname) {
+  TCPSocketWrapper::initialize();
+  hostent *ent = gethostbyname(hostname.c_str());
+  if(ent == nullptr) {
+    throw std::runtime_error("Couldn't resolve given hostname");
+  }
+  return inet_ntoa(*(in_addr*)ent->h_addr);
+}
+
+void TCPSocketWrapper::initialize() {
+  if(TCPSocketWrapper::initialized) {
+    return;
+  }
+  #ifdef _WIN32
+    WSADATA wsaData;
+    int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (error != 0) {
+      throw std::runtime_error(TCPSocketWrapper::get_last_error());
+    }
+    TCPSocketWrapper::initialized = true;
+  #endif
 }
 
 NodeInfo TCPSocketWrapper::get_nodeinfo() const { return this->ni; }

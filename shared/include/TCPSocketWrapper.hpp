@@ -14,6 +14,7 @@
   #include <unistd.h>
   #include <sys/types.h>
   #include <arpa/inet.h>
+  #include <netdb.h>
   #include <ifaddrs.h>
   #include <errno.h>
   #include <cstring> // strerror
@@ -53,12 +54,15 @@ public:
   // returns true if option is successfully set
   bool set_option(int level, int option, int value);
   NodeInfo get_nodeinfo() const;
+  static std::string resolve_hostname(const std::string &hostname);
 
 protected:
   static std::string get_last_error();
+  static void initialize();
 
   NodeInfo ni;
   bool connected = false;
+  static bool initialized;
 };
 
 #endif
