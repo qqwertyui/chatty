@@ -24,7 +24,7 @@ void TCPSocketServer::serve_forever(void *object, connectionCallback handler) {
   while (true) {
     sockaddr_in client_info;
     socklen_t addrlen = sizeof(sockaddr_in);
-    int client_fd =
+    SOCKET client_fd =
         accept(this->ni.fd, (sockaddr *)&client_info, &addrlen);
     if (client_fd == INVALID_SOCKET) {
       printf("Couldn't accept connection: %s",
@@ -33,7 +33,7 @@ void TCPSocketServer::serve_forever(void *object, connectionCallback handler) {
     }
 
     NodeInfo client(inet_ntoa(client_info.sin_addr),
-                    htons(client_info.sin_port), static_cast<int>(client_fd));
+                    htons(client_info.sin_port), client_fd);
     std::thread t(handler, object, client);
     t.detach();
   }

@@ -1,6 +1,6 @@
 #include "TCPSocketWrapper.hpp"
 
-NodeInfo::NodeInfo(const std::string &ip, unsigned short port, int fd)
+NodeInfo::NodeInfo(const std::string &ip, unsigned short port, SOCKET fd)
     : ip(ip), port(port), fd(fd) {}
 
 TCPSocketWrapper::TCPSocketWrapper(const std::string &ip, unsigned short port) {
@@ -11,11 +11,11 @@ TCPSocketWrapper::TCPSocketWrapper(const std::string &ip, unsigned short port) {
       throw std::runtime_error(TCPSocketWrapper::get_last_error());
     }
   #endif
-  int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  SOCKET fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (fd == INVALID_SOCKET) {
     throw std::runtime_error(TCPSocketWrapper::get_last_error());
   }
-  this->ni = NodeInfo(ip, port, static_cast<int>(fd));
+  this->ni = NodeInfo(ip, port, fd);
 }
 
 TCPSocketWrapper::TCPSocketWrapper(const NodeInfo &ni) {

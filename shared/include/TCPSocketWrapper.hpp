@@ -22,16 +22,18 @@
   #define INVALID_SOCKET -1
   #define SD_SEND SHUT_WR
   #define closesocket(x) close(x)
+
+  typedef SOCKET int;
 #endif
 
 class NodeInfo {
 public:
-  NodeInfo(const std::string &ip, unsigned short port, int fd);
+  NodeInfo(const std::string &ip, unsigned short port, SOCKET fd);
   NodeInfo() = default;
 
   std::string ip;
   unsigned short port;
-  int fd;
+  SOCKET fd;
 };
 
 class TCPSocketWrapper {

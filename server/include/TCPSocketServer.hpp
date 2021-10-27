@@ -13,6 +13,7 @@
   #ifndef TCP_KEEPCNT
     #define TCP_KEEPCNT 6
   #endif
+  typedef int socklen_t;
 #elif __linux__
   #include <netinet/tcp.h>
 #endif
