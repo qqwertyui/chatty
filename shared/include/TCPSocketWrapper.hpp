@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <winsock2.h>
+
 
 class NodeInfo {
 public:
