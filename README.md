@@ -14,7 +14,7 @@ b) Server:
 - fmt
 
 ## 2. Build:
-git clone https://github.com/qqwertyui/chatty-server.git && cd chatty-server
+git clone https://github.com/qqwertyui/chatty.git && cd chatty
 make
 
 ## 3. Usage:
