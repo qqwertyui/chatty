@@ -1,2 +1,4 @@
 *.exe
+client/chatty_client*
+server/chatty_server*
 TODO
