@@ -23,7 +23,7 @@
   #define SD_SEND SHUT_WR
   #define closesocket(x) close(x)
 
-  typedef int SOCKET;
+  typedef SOCKET int;
 #endif
 
 class NodeInfo {
