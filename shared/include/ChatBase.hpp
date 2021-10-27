@@ -26,7 +26,7 @@ public:
   static constexpr unsigned short DEFAULT_CHAT_PORT = 5999;
   static constexpr unsigned int STATUS_SIZE = sizeof(StatusPacket);
 
-  static constexpr uint8_t VERSION = 1;
+  static constexpr uint8_t VERSION = 2;
   static constexpr unsigned int MAX_MESSAGE_LENGTH = 1024;
   static constexpr unsigned int MAX_NAME_LENGTH = 16;
 };
