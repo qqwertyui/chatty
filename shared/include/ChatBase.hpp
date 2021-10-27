@@ -23,7 +23,7 @@ public:
     static constexpr uint8_t INVALID_VERSION = 4;
   };
 
-  static constexpr unsigned short DEFAULT_CHAT_PORT = 6000;
+  static constexpr unsigned short DEFAULT_CHAT_PORT = 5999;
   static constexpr unsigned int STATUS_SIZE = sizeof(StatusPacket);
 
   static constexpr uint8_t VERSION = 1;
