@@ -45,7 +45,6 @@ int ChatClient::connect(const std::string &username) {
   uint8_t status = (uint8_t)response[0];
 
   if (status != ChatClient::Status::SUCCESS) {
-    printf("LOLZ: %d\n", status);
     return status;
   }
 
@@ -101,5 +100,6 @@ void ChatClient::interact() {
     throw std::runtime_error("Input error");
   }
   this->send_message(input);
-  mvwdeleteln(this->input_window, 0, 0);
+  wdeleteln(this->input_window);
+  wmove(this->input_window, 0,0);
 }

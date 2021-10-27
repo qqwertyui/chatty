@@ -1,11 +1,20 @@
 CC = g++
-CFLAGS = -Wall -Wextra -std=c++17 -I./include -I../shared/include -Wno-pmf-conversions
-LIB = -lws2_32 -lspdlog -lpdcurses
-CLIENT_FILES = $(shell ls src/*.cpp) $(shell ls ../shared/src/*.cpp)
-FILENAME = chatty_client.exe
+CFLAGS = -Wall -Wextra -std=c++17 -Wno-pmf-conversions
+LIB = -lspdlog -lfmt -pthread
+SRC = $(shell ls src/*.cpp) $(shell ls ../shared/src/*.cpp)
+INCLUDE = -I./include -I../shared/include
+
+ifeq ($(OS),Windows_NT)
+	LIB += -lws2_32 -lpdcurses
+	EXTENSION = .exe
+else
+	LIB += -lncurses
+endif
+
+FILENAME = chatty_client$(EXTENSION)
 
 all:
-	$(CC) $(CFLAGS) $(CLIENT_FILES) $(LIB) -o $(FILENAME)
+	$(CC) $(CFLAGS) $(SRC) $(INCLUDE) $(LIB) -o $(FILENAME)
 
 clean:
 	rm $(FILENAME) -rf
