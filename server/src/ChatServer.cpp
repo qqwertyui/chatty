@@ -7,14 +7,14 @@
 ChatServer::ChatServer(const std::string &ip) {
   this->server = new TCPSocketServer(ip, ChatBase::DEFAULT_CHAT_PORT);
 
-  this->server->set_option<bool>(SOL_SOCKET, SO_REUSEADDR, true);
-  this->server->set_option<int>(SOL_SOCKET, SO_KEEPALIVE,
+  this->server->set_option(SOL_SOCKET, SO_REUSEADDR, 1);
+  this->server->set_option(SOL_SOCKET, SO_KEEPALIVE,
                                 ChatServer::KEEPALIVE_ACTIVE);
-  this->server->set_option<int>(IPPROTO_TCP, TCP_KEEPIDLE,
+  this->server->set_option(IPPROTO_TCP, TCP_KEEPIDLE,
                                 ChatServer::KEEPALIVE_IDLE);
-  this->server->set_option<int>(IPPROTO_TCP, TCP_KEEPINTVL,
+  this->server->set_option(IPPROTO_TCP, TCP_KEEPINTVL,
                                 ChatServer::KEEPALIVE_INTERVAL);
-  this->server->set_option<int>(IPPROTO_TCP, TCP_KEEPCNT,
+  this->server->set_option(IPPROTO_TCP, TCP_KEEPCNT,
                                 ChatServer::KEEPALIVE_MAX_PROBES);
 }
 

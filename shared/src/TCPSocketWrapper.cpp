@@ -57,14 +57,11 @@ TCPSocketWrapper::~TCPSocketWrapper() {
   #endif
 }
 
-template <typename T>
-bool TCPSocketWrapper::set_option(int level, int option, T value) {
+bool TCPSocketWrapper::set_option(int level, int option, int value) {
   int status =
-      setsockopt(this->ni.fd, level, option, (const char *)&value, sizeof(T));
+      setsockopt(this->ni.fd, level, option, (const char *)&value, sizeof(int));
   return (status == 0) ? true : false;
 }
-template bool TCPSocketWrapper::set_option<int>(int, int, int);
-template bool TCPSocketWrapper::set_option<bool>(int, int, bool);
 
 int TCPSocketWrapper::send(std::vector<unsigned char> &data) {
   int bytes_sent =

@@ -51,7 +51,7 @@ public:
   std::vector<unsigned char> recieve(int max);
 
   // returns true if option is successfully set
-  template <class T> bool set_option(int level, int option, T value);
+  bool set_option(int level, int option, int value);
   NodeInfo get_nodeinfo() const;
 
 protected:
