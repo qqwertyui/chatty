@@ -3,15 +3,18 @@
 
 #include "TCPSocketWrapper.hpp"
 
-// define missing values
-#ifndef TCP_KEEPIDLE
-#define TCP_KEEPIDLE 4
-#endif
-#ifndef TCP_KEEPINTVL
-#define TCP_KEEPINTVL 5
-#endif
-#ifndef TCP_KEEPCNT
-#define TCP_KEEPCNT 6
+#ifdef _WIN32
+  #ifndef TCP_KEEPIDLE
+    #define TCP_KEEPIDLE 4
+  #endif
+  #ifndef TCP_KEEPINTVL
+    #define TCP_KEEPINTVL 5
+  #endif
+  #ifndef TCP_KEEPCNT
+    #define TCP_KEEPCNT 6
+  #endif
+#elif __linux__
+  #include <netinet/tcp.h>
 #endif
 
 typedef void (*connectionCallback)(void *object, NodeInfo ni);

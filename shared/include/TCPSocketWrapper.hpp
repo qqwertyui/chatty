@@ -5,6 +5,24 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+  #include <winsock2.h>
+  #include <mstcpip.h>
+#elif __linux__
+  #include <sys/socket.h>
+  #include <netinet/in.h>
+  #include <unistd.h>
+  #include <sys/types.h>
+  #include <arpa/inet.h>
+  #include <ifaddrs.h>
+  #include <errno.h>
+  #include <cstring> // strerror
+
+  #define SOCKET_ERROR -1
+  #define INVALID_SOCKET -1
+  #define SD_SEND SHUT_WR
+  #define closesocket(x) close(x)
+#endif
 
 class NodeInfo {
 public:

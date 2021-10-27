@@ -23,8 +23,8 @@ void TCPSocketServer::serve_forever(void *object, connectionCallback handler) {
 
   while (true) {
     sockaddr_in client_info;
-    int addrlen = sizeof(sockaddr_in);
-    unsigned int client_fd =
+    socklen_t addrlen = sizeof(sockaddr_in);
+    int client_fd =
         accept(this->ni.fd, (sockaddr *)&client_info, &addrlen);
     if (client_fd == INVALID_SOCKET) {
       printf("Couldn't accept connection: %s",

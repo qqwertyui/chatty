@@ -1,17 +1,17 @@
 #include "TCPSocketWrapper.hpp"
 
-#include <mstcpip.h>
-
 NodeInfo::NodeInfo(const std::string &ip, unsigned short port, int fd)
     : ip(ip), port(port), fd(fd) {}
 
 TCPSocketWrapper::TCPSocketWrapper(const std::string &ip, unsigned short port) {
-  WSADATA wsaData;
-  int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
-  if (error != 0) {
-    throw std::runtime_error(TCPSocketWrapper::get_last_error());
-  }
-  unsigned int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  #ifdef _WIN32
+    WSADATA wsaData;
+    int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (error != 0) {
+      throw std::runtime_error(TCPSocketWrapper::get_last_error());
+    }
+  #endif
+  int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (fd == INVALID_SOCKET) {
     throw std::runtime_error(TCPSocketWrapper::get_last_error());
   }
@@ -52,7 +52,9 @@ TCPSocketWrapper::~TCPSocketWrapper() {
   if (this->connected) {
     this->disconnect();
   }
-  WSACleanup();
+  #ifdef _WIN32
+    WSACleanup();
+  #endif
 }
 
 template <typename T>
@@ -93,14 +95,19 @@ std::vector<unsigned char> TCPSocketWrapper::recieve(int max) {
 }
 
 std::string TCPSocketWrapper::get_last_error() {
-  char *s = nullptr;
-  FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                 nullptr, WSAGetLastError(),
-                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&s, 0,
-                 nullptr);
-  std::string result(s);
-  LocalFree(s);
+  std::string result;
+  #ifdef _WIN32
+    char *s = nullptr;
+    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS,
+                  nullptr, WSAGetLastError(),
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&s, 0,
+                  nullptr);
+    result = s;
+    LocalFree(s);
+  #elif __linux__
+    result = strerror(errno);
+  #endif
   return result;
 }
 
