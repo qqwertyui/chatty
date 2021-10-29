@@ -53,9 +53,6 @@ TCPSocketWrapper::~TCPSocketWrapper() {
   if (this->connected) {
     this->disconnect();
   }
-  #ifdef _WIN32
-    WSACleanup();
-  #endif
 }
 
 bool TCPSocketWrapper::set_option(int level, int option, int value) {

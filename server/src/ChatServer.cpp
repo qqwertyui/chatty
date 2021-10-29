@@ -1,4 +1,5 @@
 #include "ChatServer.hpp"
+#include "Utils.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -16,6 +17,10 @@ ChatServer::ChatServer(const std::string &ip) {
                                 ChatServer::KEEPALIVE_INTERVAL);
   this->server->set_option(IPPROTO_TCP, TCP_KEEPCNT,
                                 ChatServer::KEEPALIVE_MAX_PROBES);
+  this->register_command("/help", DefaultHandler::Command::help);
+  this->register_command("/online", DefaultHandler::Command::online);
+  this->register_command("/msg", DefaultHandler::Command::msg);
+  this->register_command("/exit", DefaultHandler::Command::exit);
 }
 
 void ChatServer::run() {
@@ -62,13 +67,14 @@ void ChatServer::handle_client(NodeInfo info) {
       Message::create(fmt::format("{} connected", client->get_username()))
           .get());
   this->add_client(client);
-  client->send(fmt::format("Welcome {}, there are {} users online!",
-                           client->get_username(), this->clients.size()));
+
+  DefaultHandler::client_connected(this, client);
   try {
     this->client_loop(client);
   } catch (const std::exception &e) {
     spdlog::error("Client error: {}", e.what());
   }
+
   this->remove_client(client);
   this->broadcast_message(
       Message::create(fmt::format("{} disconnected", client->get_username()))
@@ -82,10 +88,9 @@ void ChatServer::client_loop(Client *client) {
         client->recieve(ChatServer::MAX_MESSAGE_LENGTH);
     std::unique_ptr<Message> msg = std::make_unique<Message>(data, client);
     if (msg->is_valid() == false) {
-      client->send("[!] Only ASCII characters are allowed");
+      DefaultHandler::invalid_characters(this, client);
       continue;
     }
-
     if (msg->is_command()) {
       this->execute_command(client, msg.get());
     } else {
@@ -103,37 +108,15 @@ void ChatServer::broadcast_message(Message *message) {
 
 void ChatServer::execute_command(Client *client, Message *message) {
   std::lock_guard<std::mutex> guard(this->command_mutex);
-  std::string cmd = message->get_content();
-  // TODO: try using std::map <std::string_view, commandHandler>
+  std::string line = message->get_content();
+  std::vector<std::string> tokens = Utils::split(line, ' ');
 
-  if (cmd.compare("/online") == 0) {
-    std::string online;
-    for_each(this->clients.begin(), this->clients.end(),
-             [&online](Client *client) {
-               online.append(client->get_username()).append(" ");
-             });
-    client->send(online);
-  } else if (cmd.compare("/exit") == 0) {
-    client->disconnect();
-  } else if (cmd.compare("/help") == 0) {
-    std::string help_message = "Possible commands are: ";
-    for_each(ChatServer::COMMANDS.begin(), ChatServer::COMMANDS.end(),
-             [&help_message](const std::string_view &str) {
-               help_message.append(str).append("\n");
-             });
-    if (help_message.back() == '\n') {
-      help_message.pop_back();
-    }
-    client->send(help_message);
+  auto it = this->commands.find(tokens[0]);
+  if(it == this->commands.end()) {
+    DefaultHandler::Command::unknown(client);
+    return;
   }
-  /*
-  else if(cmd.compare("/msg")) {
-
-  }
-  */
-  else {
-    client->send("Unrecognized command");
-  }
+  this->commands[tokens[0]](this, client, tokens);
 }
 
 Client *ChatServer::handle_handshake(NodeInfo ni) {
@@ -152,6 +135,7 @@ Client *ChatServer::handle_handshake(NodeInfo ni) {
   if (packet.name_length > ChatBase::MAX_NAME_LENGTH) {
     conn->send((unsigned char *)&ChatServer::Status::USERNAME_TOO_LONG,
                ChatServer::STATUS_SIZE);
+    conn->disconnect();
     return nullptr;
   }
   std::vector<unsigned char> name = conn->recieve(packet.name_length);
@@ -173,4 +157,8 @@ Client *ChatServer::handle_handshake(NodeInfo ni) {
   conn->send((unsigned char *)&ChatServer::Status::SUCCESS,
              ChatServer::STATUS_SIZE);
   return (new Client(conn.release(), username));
+}
+
+void ChatServer::register_command(const std::string &str, commandHandler handler) {
+  this->commands[str] = handler;
 }

@@ -5,11 +5,13 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "TCPSocketServer.hpp"
+#include "EventHandlers.hpp"
 
 #include <array>
 #include <mutex>
 #include <string_view>
 #include <vector>
+#include <map>
 
 class ChatServer : public ChatBase {
 public:
@@ -17,6 +19,10 @@ public:
   ~ChatServer();
 
   void run();
+
+  typedef void (*commandHandler)(ChatServer *ctx, Client *invoker, 
+  std::vector<std::string> &args);
+  void register_command(const std::string &str, commandHandler handler);
 
 private:
   void handle_client(NodeInfo info);
@@ -26,10 +32,6 @@ private:
   void broadcast_message(Message *message);
 
   static void ctrl_c_handler(int signal);
-
-  static constexpr std::string_view WELCOME = "Connected to test chat!";
-  static constexpr std::array<std::string_view, 3> COMMANDS = {
-      "/help", "/online", "/exit"};
 
   static constexpr int KEEPALIVE_ACTIVE = 1;
   static constexpr int KEEPALIVE_IDLE = 30;
@@ -41,11 +43,13 @@ private:
   void remove_client(Client *client);
   Client *find_client_by_name(const std::string &name);
 
-  std::vector<Client *> clients;
+  std::map<std::string, commandHandler> commands;
+  std::vector<Client*> clients;
   std::mutex broadcast_mutex, remove_client_mutex, add_client_mutex,
       command_mutex;
 
   TCPSocketServer *server = nullptr;
+  friend class DefaultHandler;
 };
 
 #endif
